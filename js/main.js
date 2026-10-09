@@ -45,22 +45,27 @@
   };
   const routeNames = Object.keys(pageTitles);
   const pageViews = [...document.querySelectorAll("[data-page-view]")];
+  const viewsByRoute = new Map(pageViews.map((view) => [view.dataset.pageView, view]));
+  const navLinks = document.querySelectorAll(".primary-nav a, .nav-cta a");
 
   if (pageViews.length) {
     const isRoute = (route) => routeNames.includes(route);
+    let activeView = pageViews.find((view) => !view.hidden) || null;
 
     const showPage = (route, { targetId, scroll = true } = {}) => {
-      const activeView = pageViews.find((view) => view.dataset.pageView === route);
-      if (!activeView) return;
+      const nextView = viewsByRoute.get(route);
+      if (!nextView) return;
 
-      pageViews.forEach((view) => {
-        view.hidden = view !== activeView;
-      });
+      if (activeView !== nextView) {
+        if (activeView) activeView.hidden = true;
+        nextView.hidden = false;
+        activeView = nextView;
+      }
       document.title = pageTitles[route];
       const description = document.querySelector('meta[name="description"]');
-      if (description) description.content = activeView.dataset.pageDescription;
+      if (description) description.content = nextView.dataset.pageDescription;
 
-      document.querySelectorAll(".primary-nav a, .nav-cta a").forEach((link) => {
+      navLinks.forEach((link) => {
         const linkRoute = link.getAttribute("href")?.slice(1);
         if (linkRoute === route) {
           link.setAttribute("aria-current", "page");
@@ -85,7 +90,7 @@
       if (isRoute(hash)) {
         showPage(hash);
       } else if (isRoute(stateRoute)) {
-        const activeView = pageViews.find((view) => view.dataset.pageView === stateRoute);
+        const activeView = viewsByRoute.get(stateRoute);
         const target = activeView?.querySelector(`#${CSS.escape(hash)}`);
         showPage(stateRoute, { targetId: target ? hash : undefined });
       }
@@ -138,15 +143,13 @@
       });
     }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
 
-    revealTargets.forEach((target, index) => {
+    revealTargets.forEach((target) => {
       target.classList.add("reveal");
-      target.style.setProperty("--delay", `${index * 60}ms`);
       observer.observe(target);
     });
   } else {
-    revealTargets.forEach((target, index) => {
+    revealTargets.forEach((target) => {
       target.classList.add("reveal", "is-visible");
-      target.style.setProperty("--delay", `${index * 60}ms`);
     });
   }
 
@@ -197,6 +200,7 @@
       });
     };
 
+    selectTab(tabs.find((tab) => tab.getAttribute("aria-selected") === "true") || tabs[0]);
     tabs.forEach((tab, index) => {
       tab.addEventListener("click", () => selectTab(tab));
       tab.addEventListener("keydown", (event) => {
@@ -229,4 +233,6 @@
   document.querySelectorAll("[data-current-year]").forEach((node) => {
     node.textContent = new Date().getFullYear();
   });
+
+  document.documentElement.classList.add("is-enhanced");
 })();

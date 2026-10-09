@@ -31,7 +31,6 @@ body {
   background: linear-gradient(180deg, #ffffff 0%, #fbfbff 100%);
   font-size: 16px;
   line-height: 1.65;
-  animation: bodyFadeIn .7s var(--ease) both;
 }
 body::before {
   position: fixed;
@@ -53,19 +52,15 @@ button, a { -webkit-tap-highlight-color: transparent; }
 button { color: inherit; }
 :focus-visible { outline: 3px solid #8b87ff; outline-offset: 3px; }
 [hidden] { display: none !important; }
+[data-page-view][hidden], [role="tabpanel"][hidden] { display: block !important; }
+html.is-enhanced [data-page-view][hidden], html.is-enhanced [role="tabpanel"][hidden] { display: none !important; }
 .reveal {
-  opacity: 0;
-  transform: translateY(26px);
-  transition: opacity .75s var(--ease), transform .75s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease);
-  transition-delay: var(--delay, 0ms);
+  opacity: 1;
+  transform: translateY(8px);
+  transition: transform .45s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease);
 }
 .reveal.is-visible {
-  opacity: 1;
   transform: translateY(0);
-}
-@keyframes bodyFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 @keyframes pulseGlow {
   0% { opacity: .4; transform: scale(1); }
@@ -77,8 +72,8 @@ button { color: inherit; }
 }
 @keyframes fadeUp {
   from {
-    opacity: 0;
-    transform: translateY(18px);
+    opacity: 1;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
