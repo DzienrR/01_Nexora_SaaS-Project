@@ -1,16 +1,36 @@
-# Nexora website prototype
+# Nexora website
 
-Seven linked HTML pages using shared CSS and JavaScript. The site has no CDN scripts, remote fonts, or remote images.
+Nexora is a static website with one HTML entry point. All seven page views
+are contained in `index.html`; the shared styles, navigation behavior, and
+page interactions remain in `css/style.css` and `js/main.js`.
 
-- index.html — homepage
-- features.html — product capabilities
-- dashboard.html — interactive workspace preview
-- pricing.html — plans and monthly/yearly switch
-- about.html — purpose and principles
-- resources.html — category filters and in-page guides
-- contact.html — contact form and FAQs
-- css/style.css — shared design tokens, components, and responsive layouts
-- js/main.js — mobile navigation, pricing switch, dashboard tabs, resource filters, and local form feedback
-- assets/icons/nexora-mark.svg — local brand mark
+## Page routes
 
-The forms validate and show local preview feedback. They do not transmit a contact message or newsletter signup. Connect a form or email service before collecting submissions.
+Open a page directly with one of these hash routes:
+
+- `index.html#home`
+- `index.html#features`
+- `index.html#dashboard`
+- `index.html#pricing`
+- `index.html#about`
+- `index.html#resources`
+- `index.html#contact`
+
+Navigation switches views without loading another HTML file. The route works
+with direct links and browser Back/Forward navigation.
+
+## Run locally
+
+From the repository root, start Python's built-in static file server:
+
+```sh
+python3 -m http.server 8000
+```
+
+Then open <http://localhost:8000/> in a browser. No package manager, build
+step, or external service is required.
+
+GitHub Pages can serve the site directly from the repository root.
+
+The contact and newsletter forms validate input and show preview feedback in
+the browser. They do not send messages or subscriptions to a backend.

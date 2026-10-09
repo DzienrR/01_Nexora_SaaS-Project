@@ -34,6 +34,96 @@
     });
   }
 
+  const pageTitles = {
+    home: "Work Smarter. Scale Faster | Nexora",
+    features: "Features for Modern Teams | Nexora",
+    dashboard: "Product Dashboard | Nexora",
+    pricing: "Simple Pricing | Nexora",
+    about: "About Nexora | Nexora",
+    resources: "Resources for Better Work | Nexora",
+    contact: "Contact Nexora | Nexora"
+  };
+  const routeNames = Object.keys(pageTitles);
+  const pageViews = [...document.querySelectorAll("[data-page-view]")];
+
+  if (pageViews.length) {
+    const isRoute = (route) => routeNames.includes(route);
+
+    const showPage = (route, { targetId, scroll = true } = {}) => {
+      const activeView = pageViews.find((view) => view.dataset.pageView === route);
+      if (!activeView) return;
+
+      pageViews.forEach((view) => {
+        view.hidden = view !== activeView;
+      });
+      document.title = pageTitles[route];
+      const description = document.querySelector('meta[name="description"]');
+      if (description) description.content = activeView.dataset.pageDescription;
+
+      document.querySelectorAll(".primary-nav a, .nav-cta a").forEach((link) => {
+        const linkRoute = link.getAttribute("href")?.slice(1);
+        if (linkRoute === route) {
+          link.setAttribute("aria-current", "page");
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      });
+      closeMenu();
+
+      if (!scroll) return;
+      const target = targetId && activeView.querySelector(`#${CSS.escape(targetId)}`);
+      if (target) {
+        target.scrollIntoView({ behavior: "instant", block: "start" });
+      } else {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      }
+    };
+
+    const handleLocationChange = () => {
+      const hash = window.location.hash.slice(1);
+      const stateRoute = window.history.state?.route;
+      if (isRoute(hash)) {
+        showPage(hash);
+      } else if (isRoute(stateRoute)) {
+        const activeView = pageViews.find((view) => view.dataset.pageView === stateRoute);
+        const target = activeView?.querySelector(`#${CSS.escape(hash)}`);
+        showPage(stateRoute, { targetId: target ? hash : undefined });
+      }
+    };
+
+    const initialHash = window.location.hash.slice(1);
+    const initialRoute = isRoute(initialHash) ? initialHash : "home";
+    const currentState = window.history.state;
+    const nextState = currentState && typeof currentState === "object" ? { ...currentState, route: initialRoute } : { route: initialRoute };
+    if (!isRoute(initialHash)) {
+      window.history.replaceState(nextState, "", "#home");
+    } else {
+      window.history.replaceState(nextState, "", window.location.href);
+    }
+    showPage(initialRoute, { scroll: false });
+
+    document.addEventListener("click", (event) => {
+      if (!(event.target instanceof Element)) return;
+      const link = event.target.closest("a[href]");
+      if (!link) return;
+
+      const href = link.getAttribute("href");
+      const route = link.dataset.pageRoute || href?.slice(1);
+      if (!isRoute(route) || (!link.dataset.routeTarget && !href?.startsWith("#"))) return;
+
+      event.preventDefault();
+      const targetId = link.dataset.routeTarget;
+      const nextHash = `#${route}`;
+      if (window.location.hash !== nextHash) {
+        const state = window.history.state && typeof window.history.state === "object" ? window.history.state : {};
+        window.history.pushState({ ...state, route }, "", nextHash);
+      }
+      showPage(route, { targetId });
+    });
+
+    window.addEventListener("hashchange", handleLocationChange);
+  }
+
   const revealTargets = document.querySelectorAll(
     "main section, .feature-card, .workflow-card, .plan-card, .resource-card, .value-card, .milestone, .dashboard-shell, .form-card, .contact-aside, .article, .cta-band"
   );
@@ -65,7 +155,7 @@
       event.preventDefault();
       if (!form.reportValidity()) return;
 
-      const status = form.querySelector("[data-form-status]");
+      const status = form.querySelector("[data-form-status]") || form.parentElement?.querySelector("[data-form-status]");
       if (!status) return;
 
       if (form.dataset.localForm === "newsletter") {
@@ -81,12 +171,13 @@
   billingButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const period = button.dataset.billing;
+      const pricePeriod = period === "yearly" ? "year" : "month";
       billingButtons.forEach((item) => {
         item.setAttribute("aria-pressed", String(item === button));
       });
 
       document.querySelectorAll("[data-price]").forEach((price) => {
-        price.textContent = price.dataset[period];
+        price.textContent = price.dataset[pricePeriod];
       });
       document.querySelectorAll("[data-price-period]").forEach((label) => {
         label.textContent = period === "yearly" ? "per seat / month, billed yearly" : "per seat / month";
